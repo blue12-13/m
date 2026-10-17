@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>geometri</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 h-full overflow-hidden flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 flex items-center justify-between shrink-0 z-20 shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+                <i data-lucide="compass" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg text-white tracking-wide">GeoTransform 9</h1>
+                <p class="text-xs text-slate-400">Laboratorium Interaktif Transformasi Geometri Kelas 9</p>
+            </div>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <div class="hidden md:flex items-center bg-slate-900/60 p-1 rounded-xl border border-slate-700/60">
+            <button onclick="switchTab('canvas')" id="tab-btn-canvas" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow">Kanvas & Simulasi</button>
+            <button onclick="switchTab('theory')" id="tab-btn-theory" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">Materi Rumus</button>
+            <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">Latihan Soal</button>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <button onclick="openModal('infoModal')" class="p-2 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-300 transition" title="Panduan">
+                <i data-lucide="help-circle" class="w-5 h-5"></i>
+            </button>
+            <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-300">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu Dropdown -->
+    <div id="mobileMenu" class="hidden md:hidden bg-slate-800 border-b border-slate-700 px-4 py-3 space-y-2 z-10">
+        <button onclick="switchTab('canvas'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white">Kanvas & Simulasi</button>
+        <button onclick="switchTab('theory'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700">Materi Rumus</button>
+        <button onclick="switchTab('quiz'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700">Latihan Soal</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-hidden relative">
+
+        <!-- TAB 1: CANVAS & SIMULATOR -->
+        <div id="tab-canvas" class="absolute inset-0 flex flex-col md:flex-row">
+            
+            <!-- Left Sidebar Controls -->
+            <aside class="w-full md:w-96 bg-slate-800/95 border-r border-slate-700 flex flex-col z-10 shrink-0 h-1/2 md:h-full overflow-y-auto">
+                
+                <!-- Accordion / Section Header -->
+                <div class="p-4 border-b border-slate-700 bg-slate-800/9ck">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-indigo-400">Kontrol Objek</span>
+                        <span id="coordLimitBadge" class="text-[10px] bg-slate-700 px-2 py-0.5 rounded-full text-slate-300">Batas Grid: ±75 (150x150)</span>
+                    </div>
+                    
+                    <!-- Shape Creator Toolbar -->
+                    <div class="grid grid-cols-3 gap-2 mt-2">
+                        <button onclick="setTool('point')" id="tool-point" class="flex flex-col items-center justify-center p-2 rounded-xl border border-slate-600 bg-slate-700/50 hover:bg-slate-700 text-xs font-medium transition">
+                            <i data-lucide="dot" class="w-5 h-5 text-indigo-400"></i>
+                            <span class="mt-1">Titik</span>
+                        </button>
+                        <button onclick="setTool('line')" id="tool-line" class="flex flex-col items-center justify-center p-2 rounded-xl border border-slate-600 bg-slate-700/30 hover:bg-slate-700 text-xs font-medium transition">
+                            <i data-lucide="slash" class="w-5 h-5 text-indigo-400"></i>
+                            <span class="mt-1">Garis</span>
+                        </button>
+                        <button onclick="setTool('polygon')" id="tool-polygon" class="flex flex-col items-center justify-center p-2 rounded-xl border border-slate-600 bg-slate-700/30 hover:bg-slate-700 text-xs font-medium transition">
+                            <i data-lucide="triangle" class="w-5 h-5 text-indigo-400"></i>
+                            <span class="mt-1">Poligon/Segitiga</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-3">
+                        <span class="text-xs text-slate-400" id="currentObjectInfo">Objek Aktif: 0 Titik</span>
+                        <div class="space-x-1">
+                            <button onclick="undoLastPoint()" class="px-2.5 py-1 text-xs rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200">Undo Titik</button>
+                            <button onclick="clearAllObjects()" class="px-2.5 py-1 text-xs rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30">Reset Objek</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transformation Menu Accordions -->
+                <div class="p-4 space-y-4 flex-1">
+                    
+                    <!-- Transformation Selector -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wide">Pilih Jenis Transformasi</label>
+                        <select id="transformType" onchange="updateTransformParams()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option value="translation">1. Translasi (Pergeseran)</option>
+                            <option value="reflection">2. Refleksi (Pencerminan)</option>
+                            <option value="rotation">3. Rotasi (Perputaran)</option>
+                            <option value="dilatation">4. Dilatasi (Perbesaran/Pengecilan)</option>
+                        </select>
+                    </div>
+
+                    <!-- Dynamic Parameters Panel -->
+                    <div id="transformParamsContainer" class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60 space-y-3">
+                        <!-- Populated by JavaScript -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="space-y-2 pt-2">
+                        <button onclick="applyTransformation()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                            <span>Terapkan Transformasi</span>
+                        </button>
+                        <button onclick="resetTransformation()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium rounded-xl text-sm transition">
+                            Hapus Bayangan
+                        </button>
+                    </div>
+
+                    <!-- Mathematical Result & Area Calculator Box -->
+                    <div class="bg-slate-900 border border-slate-700/80 rounded-xl p-3.5 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Hasil & Analisis</span>
+                            <span id="calculatedArea" class="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-md font-mono">Luas: 0 Satuan²</span>
+                        </div>
+                        <div id="calculationLog" class="text-xs text-slate-300 font-mono space-y-1 max-h-36 overflow-y-auto no-scrollbar bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+                            <p class="text-slate-500 italic">Belum ada transformasi yang dijalankan. Silakan buat objek dan terapkan transformasi.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer canvas controls info -->
+                <div class="p-3 bg-slate-900/80 border-t border-slate-700 text-xs text-slate-400 flex items-center justify-between">
+                    <span id="zoomIndicator">Zoom: 100% (15x15)</span>
+                    <button onclick="resetZoomPan()" class="text-indigo-400 hover:underline font-medium">Reset Tampilan (15x15)</button>
+                </div>
+            </aside>
+
+            <!-- Right Canvas Viewport -->
+            <div class="flex-1 relative bg-slate-950 overflow-hidden" id="canvasContainer">
+                <canvas id="geometryCanvas" class="absolute inset-0 cursor-crosshair w-full h-full"></canvas>
+                
+                <!-- Floating Zoom & Grid Overlay Controls -->
+                <div class="absolute top-4 right-4 flex flex-col space-y-2 z-10">
+                    <button onclick="zoomIn()" class="w-10 h-10 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg border border-slate-700 flex items-center justify-center transition" title="Zoom In">
+                        <i data-lucide="zoom-in" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="zoomOut()" class="w-10 h-10 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg border border-slate-700 flex items-center justify-center transition" title="Zoom Out">
+                        <i data-lucide="zoom-out" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="resetZoomPan()" class="w-10 h-10 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg border border-slate-700 flex items-center justify-center transition" title="Reset View">
+                        <i data-lucide="maximize-2" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Cursor Coordinates Indicator -->
+                <div class="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur border border-slate-700/80 px-3 py-1.5 rounded-xl text-xs font-mono text-slate-300 shadow-lg pointer-events-none z-10 flex items-center space-x-3">
+                    <span>X: <strong id="cursorX" class="text-indigo-400">0</strong></span>
+                    <span>Y: <strong id="cursorY" class="text-indigo-400">0</strong></span>
+                </div>
+
+                <!-- Quick Help Tip -->
+                <div class="absolute top-4 left-4 bg-slate-900/80 backdrop-blur border border-slate-700/80 px-3 py-1.5 rounded-xl text-xs text-slate-300 shadow-lg pointer-events-none z-10 hidden sm:block">
+                    💡 <span id="canvasHint">Klik pada grid untuk meletakkan titik objek.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: MATERI & RUMUS -->
+        <div id="tab-theory" class="absolute inset-0 bg-slate-900 overflow-y-auto p-6 hidden">
+            <div class="max-w-4xl mx-auto space-y-8 pb-12">
+                <div class="border-b border-slate-800 pb-4">
+                    <h2 class="text-2xl font-bold text-white mb-2">Ringkasan Materi Transformasi Geometri Kelas 9</h2>
+                    <p class="text-slate-400 text-sm">Pelajari konsep dasar perpindahan posisi objek pada bidang koordinat Cartesius beserta rumus lengkapnya.</p>
+                </div>
+
+                <!-- Grid Cards for 4 Transformations -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- 1. Translasi -->
+                    <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2.5 bg-indigo-500/20 text-indigo-400 rounded-xl">
+                                <i data-lucide="move" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">1. Translasi (Pergeseran)</h3>
+                                <p class="text-xs text-slate-400">Memindahkan objek tanpa mengubah bentuk dan ukuran.</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-xs text-indigo-300 space-y-1">
+                            <p>Rumus: $T = \begin{pmatrix} a \\ b \end{pmatrix}$</p>
+                            <p class="text-slate-300">$A(x, y) \xrightarrow{T(a,b)} A'(x + a, y + b)$</p>
+                        </div>
+                        <p class="text-xs text-slate-300">Setiap koordinat titik $x$ ditambah dengan komponen pergeseran horizontal $a$, dan koordinat $y$ ditambah dengan komponen vertikal $b$.</p>
+                    </div>
+
+                    <!-- 2. Refleksi -->
+                    <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2.5 bg-sky-500/20 text-sky-400 rounded-xl">
+                                <i data-lucide="flip-horizontal" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">2. Refleksi (Pencerminan)</h3>
+                                <p class="text-xs text-slate-400">Memindahkan objek berdasarkan sifat bayangan pada cermin.</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-xs text-sky-300 space-y-1">
+                            <p>• Sumbu X: $(x, y) \rightarrow (x, -y)$</p>
+                            <p>• Sumbu Y: $(x, y) \rightarrow (-x, y)$</p>
+                            <p>• Titik Asal (0,0): $(x, y) \rightarrow (-x, -y)$</p>
+                            <p>• Garis $y = x$: $(x, y) \rightarrow (y, x)$</p>
+                            <p>• Garis $y = -x$: $(x, y) \rightarrow (-y, -x)$</p>
+                            <p>• Garis $x = h$: $(x, y) \rightarrow (2h - x, y)$</p>
+                            <p>• Garis $y = k$: $(x, y) \rightarrow (x, 2k - y)$</p>
+                        </div>
+                    </div>
+
+                    <!-- 3. Rotasi -->
+                    <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl">
+                                <i data-lucide="rotate-cw" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">3. Rotasi (Perputaran)</h3>
+                                <p class="text-xs text-slate-400">Memutar objek sejauh sudut tertentu terhadap titik pusat.</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-xs text-amber-300 space-y-1">
+                            <p class="font-bold text-amber-200">Pusat (0,0):</p>
+                            <p>• 90° berlawanan arah jarum jam: $(-y, x)$</p>
+                            <p>• 90° searah jarum jam: $(y, -x)$</p>
+                            <p>• 180°: $(-x, -y)$</p>
+                            <p>• 270° berlawanan arah jarum jam: $(y, -x)$</p>
+                        </div>
+                        <p class="text-xs text-slate-300">Catatan: Sudut positif (+) berarti berlawanan arah jarum jam, sudut negatif (-) searah jarum jam.</p>
+                    </div>
+
+                    <!-- 4. Dilatasi -->
+                    <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl">
+                                <i data-lucide="maximize" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">4. Dilatasi (Perbesaran/Pengecilan)</h3>
+                                <p class="text-xs text-slate-400">Mengubah ukuran bangun tanpa mengubah bentuk.</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-xs text-emerald-300 space-y-1">
+                            <p class="font-bold text-emerald-200">Pusat (0,0) dengan faktor skala $k$:</p>
+                            <p>$A(x, y) \rightarrow A'(kx, ky)$</p>
+                            <p class="font-bold text-emerald-200 pt-1">Pusat $(a, b)$ dengan faktor skala $k$:</p>
+                            <p>$A'(a + k(x - a), b + k(y - b))$</p>
+                        </div>
+                        <p class="text-xs text-slate-300">Jika $|k| > 1$ diperbesar, jika $0 < |k| < 1$ diperkecil, jika $k < 0$ bayangan berlawanan arah dari pusat.</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: LATIHAN SOAL / QUIZ -->
+        <div id="tab-quiz" class="absolute inset-0 bg-slate-900 overflow-y-auto p-6 hidden">
+            <div class="max-w-2xl mx-auto space-y-6 pb-12">
+                <div class="border-b border-slate-800 pb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-1">Latihan Soal Interaktif</h2>
+                        <p class="text-slate-400 text-sm">Uji pemahaman transformasi geometri kamu dengan soal pilihan ganda.</p>
+                    </div>
+                    <div id="quizScoreBadge" class="bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 px-3 py-1.5 rounded-xl text-sm font-semibold">
+                        Skor: <span id="currentScore">0</span> / <span id="totalQuestions">5</span>
+                    </div>
+                </div>
+
+                <!-- Quiz Container -->
+                <div id="quizCard" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-6">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>geometri</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 h-full overflow-hidden flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 flex items-center justify-between shrink-0 z-20 shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+                <i data-lucide="compass" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg text-white tracking-wide">GeoTransform 9</h1>
+                <p class="text-xs text-slate-400">Laboratorium Interaktif Transformasi Geometri Kelas 9</p>
+            </div>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <div class="hidden md:flex items-center bg-slate-900/60 p-1 rounded-xl border border-slate-700/60">
+            <button onclick="switchTab('canvas')" id="tab-btn-canvas" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow">Kanvas & Simulasi</button>
+            <button onclick="switchTab('theory')" id="tab-btn-theory" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">Materi Rumus</button>
+            <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">Latihan Soal</button>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <button onclick="openModal('infoModal')" class="p-2 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-300 transition" title="Panduan">
+                <i data-lucide="help-circle" class="w-5 h-5"></i>
+            </button>
+            <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-300">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu Dropdown -->
+    <div id="mobileMenu" class="hidden md:hidden bg-slate-800 border-b border-slate-700 px-4 py-3 space-y-2 z-10">
+        <button onclick="switchTab('canvas'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white">Kanvas & Simulasi</button>
+        <button onclick="switchTab('theory'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700">Materi Rumus</button>
+        <button onclick="switchTab('quiz'); toggleMobileMenu();" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700">Latihan Soal</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-hidden relative">
+
+        <!-- TAB 1: CANVAS & SIMULATOR -->
+        <div id="tab-canvas" class="absolute inset-0 flex flex-col md:flex-row">
+            
+            <!-- Left Sidebar Controls -->
+            <aside class="w-full md:w-96 bg-slate-800/95 border-r border-slate-700 flex flex-col z-10 shrink-0 h-1/2 md:h-full overflow-y-auto">
+                
+                <!-- Accordion / Section Header -->
+                <div class="p-4 border-b border-slate-700 bg-slate-800/9ck">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-indigo-400">Kontrol Objek</span>
+                        <span id="coordLimitBadge" class="text-[10px] bg-slate-700 px-2 py-0.5 rounded-full text-slate-300">Batas Grid: ±75 (150x150)</span>
+                    </div>
+                    
+                    <!-- Shape Creator Toolbar -->
+                    <div class="grid grid-cols-3 gap-2 mt-2">
+                        <button onclick="setTool('point')" id="tool-point" class="flex flex-col items-center justify-center p-2 rounded-xl border border-slate-600 bg-slate-700/50 hover:bg-slate-700 text-xs font-medium transition">
+                            <i data-lucide="dot" class="w-5 h-5 text-indigo-400"></i>
+                            <span class="mt-1">Titik</span>
+                        </button>
+                        <button onclick="setTool('line')" id="tool-line" class="flex flex-col items-center justify-center p-2 rounded-xl border border-slate-600 bg-slate-700/30 hover:bg-slate-700 text-xs font-medium transition">
+                            <i data-lucide="slash" class="w-5 h-5 text-indigo-400"></i>
+                            <span class="mt-1">Garis</span>
+                        </button>
+                        <button onclick="setTool('polygon')" id="tool-polygon" class="flex flex-col items-center justify-center p-2 rounded-xl border border-slate-600 bg-slate-700/30 hover:bg-slate-700 text-xs font-medium transition">
+                            <i data-lucide="triangle" class="w-5 h-5 text-indigo-400"></i>
+                            <span class="mt-1">Poligon/Segitiga</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-3">
+                        <span class="text-xs text-slate-400" id="currentObjectInfo">Objek Aktif: 0 Titik</span>
+                        <div class="space-x-1">
+                            <button onclick="undoLastPoint()" class="px-2.5 py-1 text-xs rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200">Undo Titik</button>
+                            <button onclick="clearAllObjects()" class="px-2.5 py-1 text-xs rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30">Reset Objek</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transformation Menu Accordions -->
+                <div class="p-4 space-y-4 flex-1">
+                    
+                    <!-- Transformation Selector -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wide">Pilih Jenis Transformasi</label>
+                        <select id="transformType" onchange="updateTransformParams()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option value="translation">1. Translasi (Pergeseran)</option>
+                            <option value="reflection">2. Refleksi (Pencerminan)</option>
+                            <option value="rotation">3. Rotasi (Perputaran)</option>
+                            <option value="dilatation">4. Dilatasi (Perbesaran/Pengecilan)</option>
+                        </select>
+                    </div>
+
+                    <!-- Dynamic Parameters Panel -->
+                    <div id="transformParamsContainer" class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60 space-y-3">
+                        <!-- Populated by JavaScript -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="space-y-2 pt-2">
+                        <button onclick="applyTransformation()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                            <span>Terapkan Transformasi</span>
+                        </button>
+                        <button onclick="resetTransformation()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium rounded-xl text-sm transition">
+                            Hapus Bayangan
+                        </button>
+                    </div>
+
+                    <!-- Mathematical Result & Area Calculator Box -->
+                    <div class="bg-slate-900 border border-slate-700/80 rounded-xl p-3.5 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Hasil & Analisis</span>
+                            <span id="calculatedArea" class="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-md font-mono">Luas: 0 Satuan²</span>
+                        </div>
+                        <div id="calculationLog" class="text-xs text-slate-300 font-mono space-y-1 max-h-36 overflow-y-auto no-scrollbar bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+                            <p class="text-slate-500 italic">Belum ada transformasi yang dijalankan. Silakan buat objek dan terapkan transformasi.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer canvas controls info -->
+                <div class="p-3 bg-slate-900/80 border-t border-slate-700 text-xs text-slate-400 flex items-center justify-between">
+                    <span id="zoomIndicator">Zoom: 100% (15x15)</span>
+                    <button onclick="resetZoomPan()" class="text-indigo-400 hover:underline font-medium">Reset Tampilan (15x15)</button>
+                </div>
+            </aside>
+
+            <!-- Right Canvas Viewport -->
+            <div class="flex-1 relative bg-slate-950 overflow-hidden" id="canvasContainer">
+                <canvas id="geometryCanvas" class="absolute inset-0 cursor-crosshair w-full h-full"></canvas>
+                
+                <!-- Floating Zoom & Grid Overlay Controls -->
+                <div class="absolute top-4 right-4 flex flex-col space-y-2 z-10">
+                    <button onclick="zoomIn()" class="w-10 h-10 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg border border-slate-700 flex items-center justify-center transition" title="Zoom In">
+                        <i data-lucide="zoom-in" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="zoomOut()" class="w-10 h-10 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg border border-slate-700 flex items-center justify-center transition" title="Zoom Out">
+                        <i data-lucide="zoom-out" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="resetZoomPan()" class="w-10 h-10 bg-slate-800/90 hover:bg-slate-700 text-white rounded-xl shadow-lg border border-slate-700 flex items-center justify-center transition" title="Reset View">
+                        <i data-lucide="maximize-2" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Cursor Coordinates Indicator -->
+                <div class="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur border border-slate-700/80 px-3 py-1.5 rounded-xl text-xs font-mono text-slate-300 shadow-lg pointer-events-none z-10 flex items-center space-x-3">
+                    <span>X: <strong id="cursorX" class="text-indigo-400">0</strong></span>
+                    <span>Y: <strong id="cursorY" class="text-indigo-400">0</strong></span>
+                </div>
+
+                <!-- Quick Help Tip -->
+                <div class="absolute top-4 left-4 bg-slate-900/80 backdrop-blur border border-slate-700/80 px-3 py-1.5 rounded-xl text-xs text-slate-300 shadow-lg pointer-events-none z-10 hidden sm:block">
+                    💡 <span id="canvasHint">Klik pada grid untuk meletakkan titik objek.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: MATERI & RUMUS -->
+        <div id="tab-theory" class="absolute inset-0 bg-slate-900 overflow-y-auto p-6 hidden">
+            <div class="max-w-4xl mx-auto space-y-8 pb-12">
+                <div class="border-b border-slate-800 pb-4">
+                    <h2 class="text-2xl font-bold text-white mb-2">Ringkasan Materi Transformasi Geometri Kelas 9</h2>
+                    <p class="text-slate-400 text-sm">Pelajari konsep dasar perpindahan posisi objek pada bidang koordinat Cartesius beserta rumus lengkapnya.</p>
+                </div>
+
+                <!-- Grid Cards for 4 Transformations -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- 1. Translasi -->
+                    <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2.5 bg-indigo-500/20 text-indigo-400 rounded-xl">
+                                <i data-lucide="move" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">1. Translasi (Pergeseran)</h3>
+                                <p class="text-xs text-slate-400">Memindahkan objek tanpa mengubah bentuk dan ukuran.</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-xs text-indigo-300 space-y-1">
+                            <p>Rumus: $T = \begin{pmatrix} a \\ b \end{pmatrix}$</p>
+                            <p class="text-slate-300">$A(x, y) \xrightarrow{T(a,b)} A'(x + a, y + b)$</p>
+                        </div>
+                        <p class="text-xs text-slate-300">Setiap koordinat titik $x$ ditambah dengan komponen pergeseran horizontal $a$, dan koordinat $y$ ditambah dengan komponen vertikal $b$.</p>
+                    </div>
+
+                    <!-- 2. Refleksi -->
+                    <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2.5 bg-sky-500/20 text-sky-400 rounded-xl">
+                                <i data-lucide="flip-horizontal" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">2. Refleksi (Pencerminan)</h3>
+                                <p class="text-xs text-slate-400">Memindahkan objek berdasarkan sifat bayangan pada cermin.</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-xs text-sky-300 space-y-1">
+                            <p>• Sumbu X: $(x, y) \rightarrow (x, -y)$</p>
+                            <p>• Sumbu Y: $(x, y) \rightarrow (-x, y)$</p>
+                            <p>• Titik Asal (0,0): $(x, y) \rightarrow (-x, -y)$</p>
+                            <p>• Garis $y = x$: $(x, y) \rightarrow (y, x)$</p>
+                            <p>• Garis $y = -x$: $(x, y) \rightarrow (-y, -x)$</p>
+                            <p>• Garis $x = h$: $(x, y) \rightarrow (2h - x, y)$</p>
+                            <p>• Garis $y = k$: $(x, y) \rightarrow (x, 2k - y)$</p>
+                        </div>
+                    </div>
+
+                    <!-- 3. Rotasi -->
+                    <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl">
+                                <i data-lucide="rotate-cw" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">3. Rotasi (Perputaran)</h3>
+                                <p class="text-xs text-slate-400">Memutar objek sejauh sudut tertentu terhadap titik pusat.</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-xs text-amber-300 space-y-1">
+                            <p class="font-bold text-amber-200">Pusat (0,0):</p>
+                            <p>• 90° berlawanan arah jarum jam: $(-y, x)$</p>
+                            <p>• 90° searah jarum jam: $(y, -x)$</p>
+                            <p>• 180°: $(-x, -y)$</p>
+                            <p>• 270° berlawanan arah jarum jam: $(y, -x)$</p>
+                        </div>
+                        <p class="text-xs text-slate-300">Catatan: Sudut positif (+) berarti berlawanan arah jarum jam, sudut negatif (-) searah jarum jam.</p>
+                    </div>
+
+                    <!-- 4. Dilatasi -->
+                    <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 space-y-3 shadow-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl">
+                                <i data-lucide="maximize" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">4. Dilatasi (Perbesaran/Pengecilan)</h3>
+                                <p class="text-xs text-slate-400">Mengubah ukuran bangun tanpa mengubah bentuk.</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-xs text-emerald-300 space-y-1">
+                            <p class="font-bold text-emerald-200">Pusat (0,0) dengan faktor skala $k$:</p>
+                            <p>$A(x, y) \rightarrow A'(kx, ky)$</p>
+                            <p class="font-bold text-emerald-200 pt-1">Pusat $(a, b)$ dengan faktor skala $k$:</p>
+                            <p>$A'(a + k(x - a), b + k(y - b))$</p>
+                        </div>
+                        <p class="text-xs text-slate-300">Jika $|k| > 1$ diperbesar, jika $0 < |k| < 1$ diperkecil, jika $k < 0$ bayangan berlawanan arah dari pusat.</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: LATIHAN SOAL / QUIZ -->
+        <div id="tab-quiz" class="absolute inset-0 bg-slate-900 overflow-y-auto p-6 hidden">
+            <div class="max-w-2xl mx-auto space-y-6 pb-12">
+                <div class="border-b border-slate-800 pb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-1">Latihan Soal Interaktif</h2>
+                        <p class="text-slate-400 text-sm">Uji pemahaman transformasi geometri kamu dengan soal pilihan ganda.</p>
+                    </div>
+                    <div id="quizScoreBadge" class="bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 px-3 py-1.5 rounded-xl text-sm font-semibold">
+                        Skor: <span id="currentScore">0</span> / <span id="totalQuestions">5</span>
+                    </div>
+                </div>
+
+                <!-- Quiz Container -->
+                <div id="quizCard" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-6">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Info / Guide Modal -->
+    <div id="infoModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 max-w-lg w-full rounded-2xl p-6 space-y-4 shadow-2xl relative">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="info" class="w-5 h-5 text-indigo-400"></i>
+                    <span>Panduan Penggunaan Aplikasi</span>
+                </h3>
+                <button onclick="closeModal('infoModal')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
+                <p>✨ <strong>Grid & Zoom Responsif:</strong> Kertas strimin Cartesius memiliki kapasitas hingga 150x150 kotak (koordinat -75 s.d 75). Saat pertama kali dibuka, tampilan difokuskan pada area 15x15 kotak agar nyaman dilihat.</p>
+                <p>🔍 <strong>Zoom-Out / Zoom-In:</strong> Gunakan tombol zoom di kanan atas atau gulir roda mouse (scroll) untuk memperkecil/memperbesar tampilan. Kotak grid baru akan otomatis muncul seiring perbesaran diperkecil hingga batas 150x150.</p>
+                <p>✏️ <strong>Membuat Objek:</strong> Pilih alat Titik, Garis, atau Poligon/Segitiga di panel kiri, lalu klik pada grid untuk menggambar objek Anda sendiri.</p>
+                <p>📐 <strong>Transformasi & Luas:</strong> Pilih jenis transformasi (Translasi, Refleksi, Rotasi, Dilatasi), atur parameternya, lalu klik <em>Terapkan Transformasi</em> untuk melihat rumus, koordinat bayangan $A'(x', y')$, serta perhitungan luas bangun datar secara instan.</p>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeModal('infoModal')" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition">Mengerti</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast / Custom Alert Modal -->
+    <div id="customAlertModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 max-w-sm w-full rounded-2xl p-5 space-y-3 shadow-2xl text-center">
+            <div id="alertIcon" class="w-12 h-12 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto">
+                <i data-lucide="bell" class="w-6 h-6"></i>
+            </div>
+            <h4 id="alertTitle" class="font-bold text-white text-base">Pemberitahuan</h4>
+            <p id="alertMessage" class="text-sm text-slate-300">Pesan keterangan di sini.</p>
+            <button onclick="closeAlert()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // --- STATE MANAGEMENT ---
+        let activeTab = 'canvas';
+        let currentTool = 'point'; // 'point', 'line', 'polygon'
+        
+        // Grid & Viewport State (Total limit 150x150 -> range -75 to 75)
+        const MAX_GRID_RANGE = 75; // -75 to 75 = 150 total boxes
+        let scale = 1.0; // zoom level
+        let panX = 0; // pan offset in pixels
+        let panY = 0;
+        
+        // Initial view shows 15x15 boxes (range approx -7.5 to 7.5 or 15 units total)
+        // We will compute pixels per unit dynamically based on canvas size.
+        let baseUnitsVisible = 15; // Initial view 15x15 boxes
+
+        // Objects data: user drawn points and transformed points
+        let userPoints = []; // Array of {x, y}
+        let transformedPoints = []; // Array of {x, y}
+        let currentTransformData = null;
+
+        // Quiz Data
+        const quizQuestions = [
+            {
+                question: "Titik A(3, -5) ditranslasikan oleh T = (-2, 4). Koordinat bayangan titik A adalah...",
+                options: ["A'(-1, -1)", "A'(1, -1)", "A'(1, -9)", "A'(-5, -9)"],
+                correct: 1,
+                explanation: "x' = 3 + (-2) = 1, y' = -5 + 4 = -1. Jadi A'(1, -1)."
+            },
+            {
+                question: "Bayangan titik B(-4, 7) jika dicerminkan terhadap sumbu X adalah...",
+                options: ["B'(4, 7)", "B'(-4, -7)", "B'(4, -7)", "B'(-7, 4)"],
+                correct: 1,
+                explanation: "Refleksi terhadap sumbu X: (x, y) -> (x, -y). Maka B(-4, 7) menjadi B'(-4, -7)."
+            },
+            {
+                question: "Titik C(2, 6) dirotasikan sebesar 90° berlawanan arah jarum jam dengan pusat (0,0). Koordinat bayangannya adalah...",
+                options: ["C'(-6, 2)", "C'(6, -2)", "C'(-2, -6)", "C'(2, -6)"],
+                correct: 0,
+                explanation: "Rotasi 90° berlawanan arah jarum jam terhadap pusat (0,0): (x, y) -> (-y, x). Maka C(2, 6) menjadi C'(-6, 2)."
+            },
+            {
+                question: "Titik D(4, -2) didilatasikan dengan pusat (0,0) dan faktor skala k = -2. Koordinat bayangannya adalah...",
+                options: ["D'(-8, 4)", "D'(8, -4)", "D'(-2, 1)", "D'(-8, -4)"],
+                correct: 0,
+                explanation: "Dilatasi [0, k]: (x, y) -> (kx, ky). x' = -2(4) = -8, y' = -2(-2) = 4. Jadi D'(-8, 4)."
+            },
+            {
+                question: "Sebuah segitiga direfleksikan terhadap garis y = x. Jika titik P(3, 5) adalah salah satu titik sudutnya, koordinat P' adalah...",
+                options: ["P'(-3, -5)", "P'(5, 3)", "P'(-5, -3)", "P'(3, -5)"],
+                correct: 1,
+                explanation: "Refleksi terhadap garis y = x: (x, y) -> (y, x). Maka P(3, 5) menjadi P'(5, 3)."
+            }
+        ];
+        let currentQuizIndex = 0;
+        let userScore = 0;
+        let selectedQuizOption = null;
+
+        // --- INITIALIZATION ---
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initCanvas();
+            updateTransformParams();
+            setupCanvasEvents();
+            renderQuiz();
+
+            // Window resize handler
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                drawGridAndObjects();
+            });
+        });
+
+        // Custom Alert modal replacing alert()
+        function showAlert(title, message) {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('customAlertModal').classList.remove('hidden');
+        }
+        function closeAlert() {
+            document.getElementById('customAlertModal').classList.add('hidden');
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            activeTab = tabId;
+            ['canvas', 'theory', 'quiz'].forEach(id => {
+                const el = document.getElementById(`tab-${id}`);
+                const btn = document.getElementById(`tab-btn-${id}`);
+                if (id === tabId) {
+                    el.classList.remove('hidden');
+                    if(btn) {
+                        btn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow";
+                    }
+                } else {
+                    el.classList.add('hidden');
+                    if(btn) {
+                        btn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
+                    }
+                }
+            });
+            if (tabId === 'canvas') {
+                setTimeout(() => {
+                    resizeCanvas();
+                    drawGridAndObjects();
+                }, 50);
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // --- CANVAS ENGINE & GRID ---
+        const canvas = document.getElementById('geometryCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDragging = false;
+        let startX = 0, startY = 0;
+
+        function initCanvas() {
+            resizeCanvas();
+            resetZoomPan();
+        }
+
+        function resizeCanvas() {
+            const container = document.getElementById('canvasContainer');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+
+        function resetZoomPan() {
+            panX = 0;
+            panY = 0;
+            // Calculate scale such that baseUnitsVisible (15 units) fits comfortably in canvas width
+            const minDim = Math.min(canvas.width, canvas.height);
+            scale = minDim / baseUnitsVisible;
+            drawGridAndObjects();
+            updateZoomIndicator();
+        }
+
+        function zoomIn() {
+            scale *= 1.25;
+            // Max zoom constraint based on MAX_GRID_RANGE
+            if (scale > 200) scale = 200;
+            drawGridAndObjects();
+            updateZoomIndicator();
+        }
+
+        function zoomOut() {
+            scale /= 1.25;
+            const minDim = Math.min(canvas.width, canvas.height);
+            const minScale = minDim / (MAX_GRID_RANGE * 2);
+            if (scale < minScale) scale = minScale;
+            drawGridAndObjects();
+            updateZoomIndicator();
+        }
+
+        function updateZoomIndicator() {
+            const minDim = Math.min(canvas.width, canvas.height);
+            const visibleUnits = Math.round((minDim / scale));
+            const zoomPercent = Math.round((scale / (minDim / 15)) * 100);
+            document.getElementById('zoomIndicator').innerText = `Zoom: ${zoomPercent}% (${visibleUnits}x${visibleUnits} kotak)`;
+        }
+
+        // Coordinate conversion helpers
+        function toPixelX(x) {
+            return (canvas.width / 2) + panX + (x * scale);
+        }
+        function toPixelY(y) {
+            return (canvas.height / 2) + panY - (y * scale);
+        }
+        function toMathX(px) {
+            return (px - (canvas.width / 2) - panX) / scale;
+        }
+        function toMathY(py) {
+            return ((canvas.height / 2) + panY - py) / scale;
+        }
+
+        // Drawing Grid & Objects
+        function drawGridAndObjects() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = (canvas.width / 2) + panX;
+            const centerY = (canvas.height / 2) + panY;
+
+            // Determine grid step in units based on current zoom scale
+            let unitStep = 1;
+            if (scale < 10) unitStep = 5;
+            if (scale < 4) unitStep = 10;
+            if (scale < 2) unitStep = 20;
+
+            const minMathX = toMathX(0);
+            const maxMathX = toMathX(canvas.width);
+            const minMathY = toMathY(canvas.height);
+            const maxMathY = toMathY(0);
+
+            // Draw Strimin Grid Lines (constrained by MAX_GRID_RANGE = 75)
+            ctx.lineWidth = 1;
+            
+            // Vertical grid lines
+            let startGridX = Math.floor(minMathX / unitStep) * unitStep;
+            for (let x = startGridX; x <= maxMathX; x += unitStep) {
+                if (Math.abs(x) > MAX_GRID_RANGE) continue;
+                const px = toPixelX(x);
+                ctx.strokeStyle = (x === 0) ? '#64748b' : '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(px, 0);
+                ctx.lineTo(px, canvas.height);
+                ctx.stroke();
+
+                // Number labels
+                if (x !== 0 && scale > 12 && Math.abs(x) % (unitStep) === 0) {
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '10px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    let labelY = centerY > canvas.height - 20 ? canvas.height - 15 : (centerY < 20 ? 25 : centerY + 15);
+                    ctx.fillText(x, px, labelY);
+                }
+            }
+
+            // Horizontal grid lines
+            let startGridY = Math.floor(minMathY / unitStep) * unitStep;
+            for (let y = startGridY; y <= maxMathY; y += unitStep) {
+                if (Math.abs(y) > MAX_GRID_RANGE) continue;
+                const py = toPixelY(y);
+                ctx.strokeStyle = (y === 0) ? '#64748b' : '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(0, py);
+                ctx.lineTo(canvas.width, py);
+                ctx.stroke();
+
+                // Number labels
+                if (y !== 0 && scale > 12 && Math.abs(y) % (unitStep) === 0) {
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '10px Inter, sans-serif';
+                    ctx.textAlign = 'right';
+                    let labelX = centerX < 30 ? 30 : (centerX > canvas.width - 30 ? canvas.width - 15 : centerX - 10);
+                    ctx.fillText(y, labelX, py + 4);
+                }
+            }
+
+            // Main Cartesian Axes X and Y
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#475569';
+            // X Axis
+            if (centerY >= 0 && centerY <= canvas.height) {
+                ctx.beginPath();
+                ctx.moveTo(0, centerY);
+                ctx.lineTo(canvas.width, centerY);
+                ctx.stroke();
+            }
+            // Y Axis
+            if (centerX >= 0 && centerX <= canvas.width) {
+                ctx.beginPath();
+                ctx.moveTo(centerX, 0);
+                ctx.lineTo(centerX, canvas.height);
+                ctx.stroke();
+            }
+
+            // Origin Label (0,0)
+            if (centerX >= 0 && centerX <= canvas.width && centerY >= 0 && centerY <= canvas.height) {
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px Inter, sans-serif';
+                ctx.fillText('0', centerX - 10, centerY + 12);
+            }
+
+            // Draw User Object (Original)
+            if (userPoints.length > 0) {
+                drawShape(userPoints, '#6366f1', 'rgba(99, 102, 241, 0.15)', 'A');
+            }
+
+            // Draw Transformed Object (Bayangan)
+            if (transformedPoints.length > 0) {
+                drawShape(transformedPoints, '#ec4899', 'rgba(236, 72, 153, 0.15)', "A'");
+            }
+        }
+
+        function drawShape(pts, strokeColor, fillColor, labelPrefix) {
+            if (pts.length === 0) return;
+
+            ctx.save();
+            ctx.strokeStyle = strokeColor;
+            ctx.fillStyle = fillColor;
+            ctx.lineWidth = 2.5;
+
+            if (pts.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(toPixelX(pts[0].x), toPixelY(pts[0].y));
+                for (let i = 1; i < pts.length; i++) {
+                    ctx.lineTo(toPixelX(pts[i].x), toPixelY(pts[i].y));
+                }
+                if (currentTool === 'polygon' && pts.length >= 3) {
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.stroke();
+            }
+
+            // Draw Vertex Points & Labels
+            pts.forEach((p, idx) => {
+                const px = toPixelX(p.x);
+                const py = toPixelY(p.y);
+
+                ctx.fillStyle = strokeColor;
+                ctx.beginPath();
+                ctx.arc(px, py, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 11px Inter, sans-serif';
+                const label = `${labelPrefix}${idx + 1}(${Math.round(p.x * 10) / 10}, ${Math.round(p.y * 10) / 10})`;
+                ctx.fillText(label, px + 8, py - 8);
+            });
+
+            ctx.restore();
+        }
+
+        // --- INTERACTIVE MOUSE & TOUCH EVENTS ---
+        function setupCanvasEvents() {
+            let isMouseDown = false;
+            let lastMouseX = 0, lastMouseY = 0;
+
+            canvas.addEventListener('mousedown', (e) => {
+                isMouseDown = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mousePx = e.clientX - rect.left;
+                const mousePy = e.clientY - rect.top;
+
+                const mathX = Math.round(toMathX(mousePx) * 2) / 2; // snap to 0.5 or integer
+                const mathY = Math.round(toMathY(mousePy) * 2) / 2;
+
+                document.getElementById('cursorX').innerText = mathX;
+                document.getElementById('cursorY').innerText = mathY;
+
+                if (isMouseDown) {
+                    const dx = e.clientX - lastMouseX;
+                    const dy = e.clientY - lastMouseY;
+                    panX += dx;
+                    panY += dy;
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                    drawGridAndObjects();
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                isMouseDown = false;
+            });
+
+            canvas.addEventListener('click', (e) => {
+                // If it was a drag, don't register click point
+                const rect = canvas.getBoundingClientRect();
+                const mousePx = e.clientX - rect.left;
+                const mousePy = e.clientY - rect.top;
+
+                const mathX = Math.round(toMathX(mousePx));
+                const mathY = Math.round(toMathY(mousePy));
+
+                // Check bounds within MAX_GRID_RANGE
+                if (Math.abs(mathX) > MAX_GRID_RANGE || Math.abs(mathY) > MAX_GRID_RANGE) {
+                    showAlert('Batas Grid', 'Titik berada di luar batas maksimum grid 150x150 (±75).');
+                    return;
+                }
+
+                handleCanvasClick(mathX, mathY);
+            });
+
+            // Zoom with wheel
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (e.deltaY < 0) {
+                    zoomIn();
+                } else {
+                    zoomOut();
+                }
+            }, { passive: false });
+        }
+
+        function setTool(tool) {
+            currentTool = tool;
+            ['point', 'line', 'polygon'].forEach(t => {
+                const btn = document.getElementById(`tool-${t}`);
+                if (t === tool) {
+                    btn.className = "flex flex-col items-center justify-center p-2 rounded-xl border border-indigo-500 bg-indigo-600/20 text-xs font-medium text-indigo-300 transition";
+                } else {
+                    btn.className = "flex flex-col items-center justify-center p-2 rounded-xl border border-slate-600 bg-slate-700/30 hover:bg-slate-700 text-xs font-medium text-slate-300 transition";
+                }
+            });
+            userPoints = [];
+            transformedPoints = [];
+            document.getElementById('currentObjectInfo').innerText = `Objek Aktif: 0 Titik`;
+            document.getElementById('calculationLog').innerHTML = `<p class="text-slate-500 italic">Objek direset. Silakan buat objek baru.</p>`;
+            document.getElementById('calculatedArea').innerText = `Luas: 0 Satuan²`;
+            drawGridAndObjects();
+        }
+
+        function handleCanvasClick(x, y) {
+            if (currentTool === 'point') {
+                userPoints = [{x, y}];
+            } else if (currentTool === 'line') {
+                if (userPoints.length >= 2) userPoints = [];
+                userPoints.push({x, y});
+            } else if (currentTool === 'polygon') {
+                if (userPoints.length >= 4) {
+                    userPoints = [{x, y}];
+                } else {
+                    userPoints.push({x, y});
+                }
+            }
+
+            transformedPoints = [];
+            document.getElementById('currentObjectInfo').innerText = `Objek Aktif: ${userPoints.length} Titik`;
+            
+            // Calculate area if polygon has >= 3 points
+            if (userPoints.length >= 3 && currentTool === 'polygon') {
+                const area = calculatePolygonArea(userPoints);
+                document.getElementById('calculatedArea').innerText = `Luas: ${area} Satuan²`;
+            } else {
+                document.getElementById('calculatedArea').innerText = `Luas: 0 Satuan²`;
+            }
+
+            drawGridAndObjects();
+        }
+
+        function undoLastPoint() {
+            userPoints.pop();
+            transformedPoints = [];
+            document.getElementById('currentObjectInfo').innerText = `Objek Aktif: ${userPoints.length} Titik`;
+            drawGridAndObjects();
+        }
+
+        function clearAllObjects() {
+            userPoints = [];
+            transformedPoints = [];
+            document.getElementById('currentObjectInfo').innerText = `Objek Aktif: 0 Titik`;
+            document.getElementById('calculationLog').innerHTML = `<p class="text-slate-500 italic">Belum ada transformasi yang dijalankan.</p>`;
+            document.getElementById('calculatedArea').innerText = `Luas: 0 Satuan²`;
+            drawGridAndObjects();
+        }
+
+        // --- TRANSFORMATION SIMULATOR LOGIC ---
+        function updateTransformParams() {
+            const type = document.getElementById('transformType').value;
+            const container = document.getElementById('transformParamsContainer');
+            let html = '';
+
+            if (type === 'translation') {
+                html = `
+                    <label class="block text-xs font-semibold text-slate-300">Vektor Translasi T = (a, b)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-[10px] text-slate-400">Geser X (a):</span>
+                            <input type="number" id="transA" value="3" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400">Geser Y (b):</span>
+                            <input type="number" id="transB" value="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'reflection') {
+                html = `
+                    <label class="block text-xs font-semibold text-slate-300">Sumbu Pencerminan</label>
+                    <select id="refAxis" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-slate-200">
+                        <option value="xaxis">Sumbu X (y = 0)</option>
+                        <option value="yaxis">Sumbu Y (x = 0)</option>
+                        <option value="origin">Titik Asal (0, 0)</option>
+                        <option value="yx">Garis y = x</option>
+                        <option value="yminusx">Garis y = -x</option>
+                        <option value="lineh">Garis x = h</option>
+                        <option value="linek">Garis y = k</option>
+                    </select>
+                    <div id="refLineParam" class="hidden pt-1">
+                        <span class="text-[10px] text-slate-400" id="refParamLabel">Nilai h / k:</span>
+                        <input type="number" id="refValH" value="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                    </div>
+                `;
+                setTimeout(() => {
+                    const selectEl = document.getElementById('refAxis');
+                    if(selectEl) {
+                        selectEl.addEventListener('change', (e) => {
+                            const paramDiv = document.getElementById('refLineParam');
+                            if (e.target.value === 'lineh' || e.target.value === 'linek') {
+                                paramDiv.classList.remove('hidden');
+                                document.getElementById('refParamLabel').innerText = e.target.value === 'lineh' ? 'Nilai h (x = h):' : 'Nilai k (y = k):';
+                            } else {
+                                paramDiv.classList.add('hidden');
+                            }
+                        });
+                    }
+                }, 50);
+            } else if (type === 'rotation') {
+                html = `
+                    <label class="block text-xs font-semibold text-slate-300">Sudut & Pusat Rotasi</label>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-[10px] text-slate-400">Sudut Putar:</span>
+                            <select id="rotAngle" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                                <option value="90">90° (Berlawanan Jarum Jam)</option>
+                                <option value="180">180°</option>
+                                <option value="270">270° (90° Searah Jarum Jam)</option>
+                                <option value="-90">-90° (90° Searah Jarum Jam)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400">Pusat Rotasi:</span>
+                            <select id="rotCenter" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                                <option value="0,0">(0, 0) - Titik Asal</option>
+                                <option value="custom">Titik Tertentu (a, b)</option>
+                            </select>
+                        </div>
+                        <div id="rotCustomCenter" class="grid grid-cols-2 gap-2 hidden">
+                            <input type="number" id="rotCenterX" value="1" placeholder="Pusat X" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-200">
+                            <input type="number" id="rotCenterY" value="1" placeholder="Pusat Y" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-200">
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => {
+                    const centerSelect = document.getElementById('rotCenter');
+                    if(centerSelect) {
+                        centerSelect.addEventListener('change', (e) => {
+                            const customDiv = document.getElementById('rotCustomCenter');
+                            if (e.target.value === 'custom') {
+                                customDiv.classList.remove('hidden');
+                            } else {
+                                customDiv.classList.add('hidden');
+                            }
+                        });
+                    }
+                }, 50);
+            } else if (type === 'dilatation') {
+                html = `
+                    <label class="block text-xs font-semibold text-slate-300">Faktor Skala & Pusat Dilatasi</label>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-[10px] text-slate-400">Faktor Skala (k):</span>
+                            <input type="number" id="dilScaleK" value="2" step="0.5" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400">Pusat Dilatasi:</span>
+                            <select id="dilCenter" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                                <option value="0,0">(0, 0) - Titik Asal</option>
+                                <option value="custom">Titik Tertentu (a, b)</option>
+                            </select>
+                        </div>
+                        <div id="dilCustomCenter" class="grid grid-cols-2 gap-2 hidden">
+                            <input type="number" id="dilCenterX" value="0" placeholder="Pusat X" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-200">
+                            <input type="number" id="dilCenterY" value="0" placeholder="Pusat Y" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-200">
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => {
+                    const centerSelect = document.getElementById('dilCenter');
+                    if(centerSelect) {
+                        centerSelect.addEventListener('change', (e) => {
+                            const customDiv = document.getElementById('dilCustomCenter');
+                            if (e.target.value === 'custom') {
+                                customDiv.classList.remove('hidden');
+                            } else {
+                                customDiv.classList.add('hidden');
+                            }
+                        });
+                    }
+                }, 50);
+            }
+
+            container.innerHTML = html;
+        }
+
+        function applyTransformation() {
+            if (userPoints.length === 0) {
+                showAlert('Peringatan', 'Silakan buat objek (titik, garis, atau poligon) pada grid terlebih dahulu.');
+                return;
+            }
+
+            const type = document.getElementById('transformType').value;
+            transformedPoints = [];
+            let logHtml = '';
+
+            if (type === 'translation') {
+                const a = parseFloat(document.getElementById('transA').value) || 0;
+                const b = parseFloat(document.getElementById('transB').value) || 0;
+
+                transformedPoints = userPoints.map(p => ({
+                    x: p.x + a,
+                    y: p.y + b
+                }));
+
+                logHtml += `<p class="font-bold text-indigo-300">Translasi T(${a}, ${b})</p>`;
+                userPoints.forEach((p, i) => {
+                    logHtml += `<p>A${i+1}(${p.x}, ${p.y}) → A'${i+1}(${p.x + a}, ${p.y + b})</p>`;
+                });
+            } else if (type === 'reflection') {
+                const axis = document.getElementById('refAxis').value;
+                const hVal = parseFloat(document.getElementById('refValH')?.value) || 0;
+
+                transformedPoints = userPoints.map(p => {
+                    let nx = p.x, ny = p.y;
+                    if (axis === 'xaxis') ny = -p.y;
+                    else if (axis === 'yaxis') nx = -p.x;
+                    else if (axis === 'origin') { nx = -p.x; ny = -p.y; }
+                    else if (axis === 'yx') { let t = p.x; nx = p.y; ny = t; }
+                    else if (axis === 'yminusx') { let t = p.x; nx = -p.y; ny = -t; }
+                    else if (axis === 'lineh') nx = 2 * hVal - p.x;
+                    else if (axis === 'linek') ny = 2 * hVal - p.y;
+                    return { x: nx, y: ny };
+                });
+
+                logHtml += `<p class="font-bold text-sky-300">Refleksi (${axis})</p>`;
+                userPoints.forEach((p, i) => {
+                    const tp = transformedPoints[i];
+                    logHtml += `<p>A${i+1}(${p.x}, ${p.y}) → A'${i+1}(${tp.x}, ${tp.y})</p>`;
+                });
+            } else if (type === 'rotation') {
+                const angle = parseInt(document.getElementById('rotAngle').value);
+                const centerType = document.getElementById('rotCenter').value;
+                let cx = 0, cy = 0;
+                if (centerType === 'custom') {
+                    cx = parseFloat(document.getElementById('rotCenterX').value) || 0;
+                    cy = parseFloat(document.getElementById('rotCenterY').value) || 0;
+                }
+
+                const rad = (angle * Math.PI) / 180;
+                const cos = Math.cos(rad);
+                const sin = Math.sin(rad);
+
+                transformedPoints = userPoints.map(p => {
+                    // Translate to origin relative to center
+                    const xRel = p.x - cx;
+                    const yRel = p.y - cy;
+                    // Rotate
+                    const xRot = xRel * cos - yRel * sin;
+                    const yRot = xRel * sin + yRel * cos;
+                    // Translate back
+                    return {
+                        x: Math.round((xRot + cx) * 100) / 100,
+                        y: Math.round((yRot + cy) * 100) / 100
+                    };
+                });
+
+                logHtml += `<p class="font-bold text-amber-300">Rotasi ${angle}° [Pusat (${cx},${cy})]</p>`;
+                userPoints.forEach((p, i) => {
+                    const tp = transformedPoints[i];
+                    logHtml += `<p>A${i+1}(${p.x}, ${p.y}) → A'${i+1}(${tp.x}, ${tp.y})</p>`;
+                });
+            } else if (type === 'dilatation') {
+                const k = parseFloat(document.getElementById('dilScaleK').value) || 1;
+                const centerType = document.getElementById('dilCenter').value;
+                let cx = 0, cy = 0;
+                if (centerType === 'custom') {
+                    cx = parseFloat(document.getElementById('dilCenterX').value) || 0;
+                    cy = parseFloat(document.getElementById('dilCenterY').value) || 0;
+                }
+
+                transformedPoints = userPoints.map(p => ({
+                    x: cx + k * (p.x - cx),
+                    y: cy + k * (p.y - cy)
+                }));
+
+                logHtml += `<p class="font-bold text-emerald-300">Dilatasi [Skala k=${k}, Pusat (${cx},${cy})]</p>`;
+                userPoints.forEach((p, i) => {
+                    const tp = transformedPoints[i];
+                    logHtml += `<p>A${i+1}(${p.x}, ${p.y}) → A'${i+1}(${tp.x}, ${tp.y})</p>`;
+                });
+            }
+
+            document.getElementById('calculationLog').innerHTML = logHtml;
+
+            // Recalculate area for transformed polygon if applicable
+            if (transformedPoints.length >= 3 && currentTool === 'polygon') {
+                const origArea = calculatePolygonArea(userPoints);
+                const transArea = calculatePolygonArea(transformedPoints);
+                document.getElementById('calculatedArea').innerText = `Luas Bayangan: ${transArea} Satuan²`;
+            }
+
+            drawGridAndObjects();
+        }
+
+        function resetTransformation() {
+            transformedPoints = [];
+            document.getElementById('calculationLog').innerHTML = `<p class="text-slate-500 italic">Bayangan dihapus.</p>`;
+            if (userPoints.length >= 3 && currentTool === 'polygon') {
+                const area = calculatePolygonArea(userPoints);
+                document.getElementById('calculatedArea').innerText = `Luas: ${area} Satuan²`;
+            } else {
+                document.getElementById('calculatedArea').innerText = `Luas: 0 Satuan²`;
+            }
+            drawGridAndObjects();
+        }
+
+        // Shoelace formula for polygon area
+        function calculatePolygonArea(pts) {
+            let n = pts.length;
+            if (n < 3) return 0;
+            let area = 0;
+            for (let i = 0; i < n; i++) {
+                let j = (i + 1) % n;
+                area += pts[i].x * pts[j].y;
+                area -= pts[j].x * pts[i].y;
+            }
+            return Math.round(Math.abs(area) / 2 * 100) / 100;
+        }
+
+        // --- QUIZ MODULE ---
+        function renderQuiz() {
+            const q = quizQuestions[currentQuizIndex];
+            const container = document.getElementById('quizCard');
+            document.getElementById('currentScore').innerText = userScore;
+            document.getElementById('totalQuestions').innerText = quizQuestions.length;
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between text-xs text-indigo-400 font-semibold uppercase tracking-wider">
+                        <span>Soal ${currentQuizIndex + 1} dari ${quizQuestions.length}</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-white leading-snug">${q.question}</h3>
+                    <div class="space-y-2 pt-2">
+            `;
+
+            q.options.forEach((opt, idx) => {
+                let btnClass = "w-full text-left px-4 py-3 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-700 text-sm text-slate-200 transition flex items-center space-x-3";
+                if (selectedQuizOption !== null) {
+                    if (idx === q.correct) {
+                        btnClass = "w-full text-left px-4 py-3 rounded-xl border border-emerald-500 bg-emerald-500/20 text-sm text-emerald-200 font-medium flex items-center space-x-3";
+                    } else if (idx === selectedQuizOption && idx !== q.correct) {
+                        btnClass = "w-full text-left px-4 py-3 rounded-xl border border-rose-500 bg-rose-500/20 text-sm text-rose-200 font-medium flex items-center space-x-3";
+                    }
+                }
+
+                html += `
+                    <button onclick="selectQuizAnswer(${idx})" ${selectedQuizOption !== null ? 'disabled' : ''} class="${btnClass}">
+                        <span class="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs text-slate-300 font-bold shrink-0">${String.fromCharCode(65 + idx)}</span>
+                        <span>${opt}</span>
+                    </button>
+                `;
+            });
+
+            html += `</div>`;
+
+            if (selectedQuizOption !== null) {
+                html += `
+                    <div class="bg-slate-900 border border-slate-700/80 p-4 rounded-xl space-y-2 mt-4 animate-fadeIn">
+                        <p class="text-xs font-bold ${selectedQuizOption === q.correct ? 'text-emerald-400' : 'text-rose-400'}">
+                            ${selectedQuizOption === q.correct ? '✅ Benar!' : '❌ Kurang Tepat.'}
+                        </p>
+                        <p class="text-xs text-slate-300 leading-relaxed">${q.explanation}</p>
+                        <button onclick="nextQuizQuestion()" class="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition">
+                            ${currentQuizIndex < quizQuestions.length - 1 ? 'Soal Berikutnya →' : 'Lihat Hasil Akhir'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function selectQuizAnswer(idx) {
+            selectedQuizOption = idx;
+            if (idx === quizQuestions[currentQuizIndex].correct) {
+                userScore++;
+            }
+            renderQuiz();
+        }
+
+        function nextQuizQuestion() {
+            currentQuizIndex++;
+            selectedQuizOption = null;
+            if (currentQuizIndex >= quizQuestions.length) {
+                showQuizResult();
+            } else {
+                renderQuiz();
+            }
+        }
+
+        function showQuizResult() {
+            const container = document.getElementById('quizCard');
+            container.innerHTML = `
+                <div class="text-center space-y-4 py-6">
+                    <div class="w-16 h-16 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto">
+                        <i data-lucide="award" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white">Kuis Selesai!</h3>
+                    <p class="text-slate-300 text-sm">Skor akhir kamu adalah <strong class="text-indigo-400 text-lg">${userScore}</strong> dari ${quizQuestions.length}</p>
+                    <button onclick="resetQuiz()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition">Ulangi Kuis</button>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function resetQuiz() {
+            currentQuizIndex = 0;
+            userScore = 0;
+            selectedQuizOption = null;
+            renderQuiz();
+        }
+    </script>
+</body>
+</html><div class="bg-slate-900 border border-slate-700 max-w-lg w-full rounded-2xl p-6 space-y-4 shadow-2xl relative">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="info" class="w-5 h-5 text-indigo-400"></i>
+                    <span>Panduan Penggunaan Aplikasi</span>
+                </h3>
+                <button onclick="closeModal('infoModal')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
+                <p>✨ <strong>Grid & Zoom Responsif:</strong> Kertas strimin Cartesius memiliki kapasitas hingga 150x150 kotak (koordinat -75 s.d 75). Saat pertama kali dibuka, tampilan difokuskan pada area 15x15 kotak agar nyaman dilihat.</p>
+                <p>🔍 <strong>Zoom-Out / Zoom-In:</strong> Gunakan tombol zoom di kanan atas atau gulir roda mouse (scroll) untuk memperkecil/memperbesar tampilan. Kotak grid baru akan otomatis muncul seiring perbesaran diperkecil hingga batas 150x150.</p>
+                <p>✏️ <strong>Membuat Objek:</strong> Pilih alat Titik, Garis, atau Poligon/Segitiga di panel kiri, lalu klik pada grid untuk menggambar objek Anda sendiri.</p>
+                <p>📐 <strong>Transformasi & Luas:</strong> Pilih jenis transformasi (Translasi, Refleksi, Rotasi, Dilatasi), atur parameternya, lalu klik <em>Terapkan Transformasi</em> untuk melihat rumus, koordinat bayangan $A'(x', y')$, serta perhitungan luas bangun datar secara instan.</p>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeModal('infoModal')" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition">Mengerti</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast / Custom Alert Modal -->
+    <div id="customAlertModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 max-w-sm w-full rounded-2xl p-5 space-y-3 shadow-2xl text-center">
+            <div id="alertIcon" class="w-12 h-12 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto">
+                <i data-lucide="bell" class="w-6 h-6"></i>
+            </div>
+            <h4 id="alertTitle" class="font-bold text-white text-base">Pemberitahuan</h4>
+            <p id="alertMessage" class="text-sm text-slate-300">Pesan keterangan di sini.</p>
+            <button onclick="closeAlert()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // --- STATE MANAGEMENT ---
+        let activeTab = 'canvas';
+        let currentTool = 'point'; // 'point', 'line', 'polygon'
+        
+        // Grid & Viewport State (Total limit 150x150 -> range -75 to 75)
+        const MAX_GRID_RANGE = 75; // -75 to 75 = 150 total boxes
+        let scale = 1.0; // zoom level
+        let panX = 0; // pan offset in pixels
+        let panY = 0;
+        
+        // Initial view shows 15x15 boxes (range approx -7.5 to 7.5 or 15 units total)
+        // We will compute pixels per unit dynamically based on canvas size.
+        let baseUnitsVisible = 15; // Initial view 15x15 boxes
+
+        // Objects data: user drawn points and transformed points
+        let userPoints = []; // Array of {x, y}
+        let transformedPoints = []; // Array of {x, y}
+        let currentTransformData = null;
+
+        // Quiz Data
+        const quizQuestions = [
+            {
+                question: "Titik A(3, -5) ditranslasikan oleh T = (-2, 4). Koordinat bayangan titik A adalah...",
+                options: ["A'(-1, -1)", "A'(1, -1)", "A'(1, -9)", "A'(-5, -9)"],
+                correct: 1,
+                explanation: "x' = 3 + (-2) = 1, y' = -5 + 4 = -1. Jadi A'(1, -1)."
+            },
+            {
+                question: "Bayangan titik B(-4, 7) jika dicerminkan terhadap sumbu X adalah...",
+                options: ["B'(4, 7)", "B'(-4, -7)", "B'(4, -7)", "B'(-7, 4)"],
+                correct: 1,
+                explanation: "Refleksi terhadap sumbu X: (x, y) -> (x, -y). Maka B(-4, 7) menjadi B'(-4, -7)."
+            },
+            {
+                question: "Titik C(2, 6) dirotasikan sebesar 90° berlawanan arah jarum jam dengan pusat (0,0). Koordinat bayangannya adalah...",
+                options: ["C'(-6, 2)", "C'(6, -2)", "C'(-2, -6)", "C'(2, -6)"],
+                correct: 0,
+                explanation: "Rotasi 90° berlawanan arah jarum jam terhadap pusat (0,0): (x, y) -> (-y, x). Maka C(2, 6) menjadi C'(-6, 2)."
+            },
+            {
+                question: "Titik D(4, -2) didilatasikan dengan pusat (0,0) dan faktor skala k = -2. Koordinat bayangannya adalah...",
+                options: ["D'(-8, 4)", "D'(8, -4)", "D'(-2, 1)", "D'(-8, -4)"],
+                correct: 0,
+                explanation: "Dilatasi [0, k]: (x, y) -> (kx, ky). x' = -2(4) = -8, y' = -2(-2) = 4. Jadi D'(-8, 4)."
+            },
+            {
+                question: "Sebuah segitiga direfleksikan terhadap garis y = x. Jika titik P(3, 5) adalah salah satu titik sudutnya, koordinat P' adalah...",
+                options: ["P'(-3, -5)", "P'(5, 3)", "P'(-5, -3)", "P'(3, -5)"],
+                correct: 1,
+                explanation: "Refleksi terhadap garis y = x: (x, y) -> (y, x). Maka P(3, 5) menjadi P'(5, 3)."
+            }
+        ];
+        let currentQuizIndex = 0;
+        let userScore = 0;
+        let selectedQuizOption = null;
+
+        // --- INITIALIZATION ---
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initCanvas();
+            updateTransformParams();
+            setupCanvasEvents();
+            renderQuiz();
+
+            // Window resize handler
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                drawGridAndObjects();
+            });
+        });
+
+        // Custom Alert modal replacing alert()
+        function showAlert(title, message) {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('customAlertModal').classList.remove('hidden');
+        }
+        function closeAlert() {
+            document.getElementById('customAlertModal').classList.add('hidden');
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            activeTab = tabId;
+            ['canvas', 'theory', 'quiz'].forEach(id => {
+                const el = document.getElementById(`tab-${id}`);
+                const btn = document.getElementById(`tab-btn-${id}`);
+                if (id === tabId) {
+                    el.classList.remove('hidden');
+                    if(btn) {
+                        btn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow";
+                    }
+                } else {
+                    el.classList.add('hidden');
+                    if(btn) {
+                        btn.className = "px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
+                    }
+                }
+            });
+            if (tabId === 'canvas') {
+                setTimeout(() => {
+                    resizeCanvas();
+                    drawGridAndObjects();
+                }, 50);
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // --- CANVAS ENGINE & GRID ---
+        const canvas = document.getElementById('geometryCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDragging = false;
+        let startX = 0, startY = 0;
+
+        function initCanvas() {
+            resizeCanvas();
+            resetZoomPan();
+        }
+
+        function resizeCanvas() {
+            const container = document.getElementById('canvasContainer');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+
+        function resetZoomPan() {
+            panX = 0;
+            panY = 0;
+            // Calculate scale such that baseUnitsVisible (15 units) fits comfortably in canvas width
+            const minDim = Math.min(canvas.width, canvas.height);
+            scale = minDim / baseUnitsVisible;
+            drawGridAndObjects();
+            updateZoomIndicator();
+        }
+
+        function zoomIn() {
+            scale *= 1.25;
+            // Max zoom constraint based on MAX_GRID_RANGE
+            if (scale > 200) scale = 200;
+            drawGridAndObjects();
+            updateZoomIndicator();
+        }
+
+        function zoomOut() {
+            scale /= 1.25;
+            const minDim = Math.min(canvas.width, canvas.height);
+            const minScale = minDim / (MAX_GRID_RANGE * 2);
+            if (scale < minScale) scale = minScale;
+            drawGridAndObjects();
+            updateZoomIndicator();
+        }
+
+        function updateZoomIndicator() {
+            const minDim = Math.min(canvas.width, canvas.height);
+            const visibleUnits = Math.round((minDim / scale));
+            const zoomPercent = Math.round((scale / (minDim / 15)) * 100);
+            document.getElementById('zoomIndicator').innerText = `Zoom: ${zoomPercent}% (${visibleUnits}x${visibleUnits} kotak)`;
+        }
+
+        // Coordinate conversion helpers
+        function toPixelX(x) {
+            return (canvas.width / 2) + panX + (x * scale);
+        }
+        function toPixelY(y) {
+            return (canvas.height / 2) + panY - (y * scale);
+        }
+        function toMathX(px) {
+            return (px - (canvas.width / 2) - panX) / scale;
+        }
+        function toMathY(py) {
+            return ((canvas.height / 2) + panY - py) / scale;
+        }
+
+        // Drawing Grid & Objects
+        function drawGridAndObjects() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = (canvas.width / 2) + panX;
+            const centerY = (canvas.height / 2) + panY;
+
+            // Determine grid step in units based on current zoom scale
+            let unitStep = 1;
+            if (scale < 10) unitStep = 5;
+            if (scale < 4) unitStep = 10;
+            if (scale < 2) unitStep = 20;
+
+            const minMathX = toMathX(0);
+            const maxMathX = toMathX(canvas.width);
+            const minMathY = toMathY(canvas.height);
+            const maxMathY = toMathY(0);
+
+            // Draw Strimin Grid Lines (constrained by MAX_GRID_RANGE = 75)
+            ctx.lineWidth = 1;
+            
+            // Vertical grid lines
+            let startGridX = Math.floor(minMathX / unitStep) * unitStep;
+            for (let x = startGridX; x <= maxMathX; x += unitStep) {
+                if (Math.abs(x) > MAX_GRID_RANGE) continue;
+                const px = toPixelX(x);
+                ctx.strokeStyle = (x === 0) ? '#64748b' : '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(px, 0);
+                ctx.lineTo(px, canvas.height);
+                ctx.stroke();
+
+                // Number labels
+                if (x !== 0 && scale > 12 && Math.abs(x) % (unitStep) === 0) {
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '10px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    let labelY = centerY > canvas.height - 20 ? canvas.height - 15 : (centerY < 20 ? 25 : centerY + 15);
+                    ctx.fillText(x, px, labelY);
+                }
+            }
+
+            // Horizontal grid lines
+            let startGridY = Math.floor(minMathY / unitStep) * unitStep;
+            for (let y = startGridY; y <= maxMathY; y += unitStep) {
+                if (Math.abs(y) > MAX_GRID_RANGE) continue;
+                const py = toPixelY(y);
+                ctx.strokeStyle = (y === 0) ? '#64748b' : '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(0, py);
+                ctx.lineTo(canvas.width, py);
+                ctx.stroke();
+
+                // Number labels
+                if (y !== 0 && scale > 12 && Math.abs(y) % (unitStep) === 0) {
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '10px Inter, sans-serif';
+                    ctx.textAlign = 'right';
+                    let labelX = centerX < 30 ? 30 : (centerX > canvas.width - 30 ? canvas.width - 15 : centerX - 10);
+                    ctx.fillText(y, labelX, py + 4);
+                }
+            }
+
+            // Main Cartesian Axes X and Y
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#475569';
+            // X Axis
+            if (centerY >= 0 && centerY <= canvas.height) {
+                ctx.beginPath();
+                ctx.moveTo(0, centerY);
+                ctx.lineTo(canvas.width, centerY);
+                ctx.stroke();
+            }
+            // Y Axis
+            if (centerX >= 0 && centerX <= canvas.width) {
+                ctx.beginPath();
+                ctx.moveTo(centerX, 0);
+                ctx.lineTo(centerX, canvas.height);
+                ctx.stroke();
+            }
+
+            // Origin Label (0,0)
+            if (centerX >= 0 && centerX <= canvas.width && centerY >= 0 && centerY <= canvas.height) {
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px Inter, sans-serif';
+                ctx.fillText('0', centerX - 10, centerY + 12);
+            }
+
+            // Draw User Object (Original)
+            if (userPoints.length > 0) {
+                drawShape(userPoints, '#6366f1', 'rgba(99, 102, 241, 0.15)', 'A');
+            }
+
+            // Draw Transformed Object (Bayangan)
+            if (transformedPoints.length > 0) {
+                drawShape(transformedPoints, '#ec4899', 'rgba(236, 72, 153, 0.15)', "A'");
+            }
+        }
+
+        function drawShape(pts, strokeColor, fillColor, labelPrefix) {
+            if (pts.length === 0) return;
+
+            ctx.save();
+            ctx.strokeStyle = strokeColor;
+            ctx.fillStyle = fillColor;
+            ctx.lineWidth = 2.5;
+
+            if (pts.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(toPixelX(pts[0].x), toPixelY(pts[0].y));
+                for (let i = 1; i < pts.length; i++) {
+                    ctx.lineTo(toPixelX(pts[i].x), toPixelY(pts[i].y));
+                }
+                if (currentTool === 'polygon' && pts.length >= 3) {
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.stroke();
+            }
+
+            // Draw Vertex Points & Labels
+            pts.forEach((p, idx) => {
+                const px = toPixelX(p.x);
+                const py = toPixelY(p.y);
+
+                ctx.fillStyle = strokeColor;
+                ctx.beginPath();
+                ctx.arc(px, py, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 11px Inter, sans-serif';
+                const label = `${labelPrefix}${idx + 1}(${Math.round(p.x * 10) / 10}, ${Math.round(p.y * 10) / 10})`;
+                ctx.fillText(label, px + 8, py - 8);
+            });
+
+            ctx.restore();
+        }
+
+        // --- INTERACTIVE MOUSE & TOUCH EVENTS ---
+        function setupCanvasEvents() {
+            let isMouseDown = false;
+            let lastMouseX = 0, lastMouseY = 0;
+
+            canvas.addEventListener('mousedown', (e) => {
+                isMouseDown = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mousePx = e.clientX - rect.left;
+                const mousePy = e.clientY - rect.top;
+
+                const mathX = Math.round(toMathX(mousePx) * 2) / 2; // snap to 0.5 or integer
+                const mathY = Math.round(toMathY(mousePy) * 2) / 2;
+
+                document.getElementById('cursorX').innerText = mathX;
+                document.getElementById('cursorY').innerText = mathY;
+
+                if (isMouseDown) {
+                    const dx = e.clientX - lastMouseX;
+                    const dy = e.clientY - lastMouseY;
+                    panX += dx;
+                    panY += dy;
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                    drawGridAndObjects();
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                isMouseDown = false;
+            });
+
+            canvas.addEventListener('click', (e) => {
+                // If it was a drag, don't register click point
+                const rect = canvas.getBoundingClientRect();
+                const mousePx = e.clientX - rect.left;
+                const mousePy = e.clientY - rect.top;
+
+                const mathX = Math.round(toMathX(mousePx));
+                const mathY = Math.round(toMathY(mousePy));
+
+                // Check bounds within MAX_GRID_RANGE
+                if (Math.abs(mathX) > MAX_GRID_RANGE || Math.abs(mathY) > MAX_GRID_RANGE) {
+                    showAlert('Batas Grid', 'Titik berada di luar batas maksimum grid 150x150 (±75).');
+                    return;
+                }
+
+                handleCanvasClick(mathX, mathY);
+            });
+
+            // Zoom with wheel
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (e.deltaY < 0) {
+                    zoomIn();
+                } else {
+                    zoomOut();
+                }
+            }, { passive: false });
+        }
+
+        function setTool(tool) {
+            currentTool = tool;
+            ['point', 'line', 'polygon'].forEach(t => {
+                const btn = document.getElementById(`tool-${t}`);
+                if (t === tool) {
+                    btn.className = "flex flex-col items-center justify-center p-2 rounded-xl border border-indigo-500 bg-indigo-600/20 text-xs font-medium text-indigo-300 transition";
+                } else {
+                    btn.className = "flex flex-col items-center justify-center p-2 rounded-xl border border-slate-600 bg-slate-700/30 hover:bg-slate-700 text-xs font-medium text-slate-300 transition";
+                }
+            });
+            userPoints = [];
+            transformedPoints = [];
+            document.getElementById('currentObjectInfo').innerText = `Objek Aktif: 0 Titik`;
+            document.getElementById('calculationLog').innerHTML = `<p class="text-slate-500 italic">Objek direset. Silakan buat objek baru.</p>`;
+            document.getElementById('calculatedArea').innerText = `Luas: 0 Satuan²`;
+            drawGridAndObjects();
+        }
+
+        function handleCanvasClick(x, y) {
+            if (currentTool === 'point') {
+                userPoints = [{x, y}];
+            } else if (currentTool === 'line') {
+                if (userPoints.length >= 2) userPoints = [];
+                userPoints.push({x, y});
+            } else if (currentTool === 'polygon') {
+                if (userPoints.length >= 4) {
+                    userPoints = [{x, y}];
+                } else {
+                    userPoints.push({x, y});
+                }
+            }
+
+            transformedPoints = [];
+            document.getElementById('currentObjectInfo').innerText = `Objek Aktif: ${userPoints.length} Titik`;
+            
+            // Calculate area if polygon has >= 3 points
+            if (userPoints.length >= 3 && currentTool === 'polygon') {
+                const area = calculatePolygonArea(userPoints);
+                document.getElementById('calculatedArea').innerText = `Luas: ${area} Satuan²`;
+            } else {
+                document.getElementById('calculatedArea').innerText = `Luas: 0 Satuan²`;
+            }
+
+            drawGridAndObjects();
+        }
+
+        function undoLastPoint() {
+            userPoints.pop();
+            transformedPoints = [];
+            document.getElementById('currentObjectInfo').innerText = `Objek Aktif: ${userPoints.length} Titik`;
+            drawGridAndObjects();
+        }
+
+        function clearAllObjects() {
+            userPoints = [];
+            transformedPoints = [];
+            document.getElementById('currentObjectInfo').innerText = `Objek Aktif: 0 Titik`;
+            document.getElementById('calculationLog').innerHTML = `<p class="text-slate-500 italic">Belum ada transformasi yang dijalankan.</p>`;
+            document.getElementById('calculatedArea').innerText = `Luas: 0 Satuan²`;
+            drawGridAndObjects();
+        }
+
+        // --- TRANSFORMATION SIMULATOR LOGIC ---
+        function updateTransformParams() {
+            const type = document.getElementById('transformType').value;
+            const container = document.getElementById('transformParamsContainer');
+            let html = '';
+
+            if (type === 'translation') {
+                html = `
+                    <label class="block text-xs font-semibold text-slate-300">Vektor Translasi T = (a, b)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-[10px] text-slate-400">Geser X (a):</span>
+                            <input type="number" id="transA" value="3" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400">Geser Y (b):</span>
+                            <input type="number" id="transB" value="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'reflection') {
+                html = `
+                    <label class="block text-xs font-semibold text-slate-300">Sumbu Pencerminan</label>
+                    <select id="refAxis" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm text-slate-200">
+                        <option value="xaxis">Sumbu X (y = 0)</option>
+                        <option value="yaxis">Sumbu Y (x = 0)</option>
+                        <option value="origin">Titik Asal (0, 0)</option>
+                        <option value="yx">Garis y = x</option>
+                        <option value="yminusx">Garis y = -x</option>
+                        <option value="lineh">Garis x = h</option>
+                        <option value="linek">Garis y = k</option>
+                    </select>
+                    <div id="refLineParam" class="hidden pt-1">
+                        <span class="text-[10px] text-slate-400" id="refParamLabel">Nilai h / k:</span>
+                        <input type="number" id="refValH" value="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                    </div>
+                `;
+                setTimeout(() => {
+                    const selectEl = document.getElementById('refAxis');
+                    if(selectEl) {
+                        selectEl.addEventListener('change', (e) => {
+                            const paramDiv = document.getElementById('refLineParam');
+                            if (e.target.value === 'lineh' || e.target.value === 'linek') {
+                                paramDiv.classList.remove('hidden');
+                                document.getElementById('refParamLabel').innerText = e.target.value === 'lineh' ? 'Nilai h (x = h):' : 'Nilai k (y = k):';
+                            } else {
+                                paramDiv.classList.add('hidden');
+                            }
+                        });
+                    }
+                }, 50);
+            } else if (type === 'rotation') {
+                html = `
+                    <label class="block text-xs font-semibold text-slate-300">Sudut & Pusat Rotasi</label>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-[10px] text-slate-400">Sudut Putar:</span>
+                            <select id="rotAngle" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                                <option value="90">90° (Berlawanan Jarum Jam)</option>
+                                <option value="180">180°</option>
+                                <option value="270">270° (90° Searah Jarum Jam)</option>
+                                <option value="-90">-90° (90° Searah Jarum Jam)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400">Pusat Rotasi:</span>
+                            <select id="rotCenter" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                                <option value="0,0">(0, 0) - Titik Asal</option>
+                                <option value="custom">Titik Tertentu (a, b)</option>
+                            </select>
+                        </div>
+                        <div id="rotCustomCenter" class="grid grid-cols-2 gap-2 hidden">
+                            <input type="number" id="rotCenterX" value="1" placeholder="Pusat X" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-200">
+                            <input type="number" id="rotCenterY" value="1" placeholder="Pusat Y" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-200">
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => {
+                    const centerSelect = document.getElementById('rotCenter');
+                    if(centerSelect) {
+                        centerSelect.addEventListener('change', (e) => {
+                            const customDiv = document.getElementById('rotCustomCenter');
+                            if (e.target.value === 'custom') {
+                                customDiv.classList.remove('hidden');
+                            } else {
+                                customDiv.classList.add('hidden');
+                            }
+                        });
+                    }
+                }, 50);
+            } else if (type === 'dilatation') {
+                html = `
+                    <label class="block text-xs font-semibold text-slate-300">Faktor Skala & Pusat Dilatasi</label>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-[10px] text-slate-400">Faktor Skala (k):</span>
+                            <input type="number" id="dilScaleK" value="2" step="0.5" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400">Pusat Dilatasi:</span>
+                            <select id="dilCenter" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-sm text-slate-200">
+                                <option value="0,0">(0, 0) - Titik Asal</option>
+                                <option value="custom">Titik Tertentu (a, b)</option>
+                            </select>
+                        </div>
+                        <div id="dilCustomCenter" class="grid grid-cols-2 gap-2 hidden">
+                            <input type="number" id="dilCenterX" value="0" placeholder="Pusat X" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-200">
+                            <input type="number" id="dilCenterY" value="0" placeholder="Pusat Y" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-200">
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => {
+                    const centerSelect = document.getElementById('dilCenter');
+                    if(centerSelect) {
+                        centerSelect.addEventListener('change', (e) => {
+                            const customDiv = document.getElementById('dilCustomCenter');
+                            if (e.target.value === 'custom') {
+                                customDiv.classList.remove('hidden');
+                            } else {
+                                customDiv.classList.add('hidden');
+                            }
+                        });
+                    }
+                }, 50);
+            }
+
+            container.innerHTML = html;
+        }
+
+        function applyTransformation() {
+            if (userPoints.length === 0) {
+                showAlert('Peringatan', 'Silakan buat objek (titik, garis, atau poligon) pada grid terlebih dahulu.');
+                return;
+            }
+
+            const type = document.getElementById('transformType').value;
+            transformedPoints = [];
+            let logHtml = '';
+
+            if (type === 'translation') {
+                const a = parseFloat(document.getElementById('transA').value) || 0;
+                const b = parseFloat(document.getElementById('transB').value) || 0;
+
+                transformedPoints = userPoints.map(p => ({
+                    x: p.x + a,
+                    y: p.y + b
+                }));
+
+                logHtml += `<p class="font-bold text-indigo-300">Translasi T(${a}, ${b})</p>`;
+                userPoints.forEach((p, i) => {
+                    logHtml += `<p>A${i+1}(${p.x}, ${p.y}) → A'${i+1}(${p.x + a}, ${p.y + b})</p>`;
+                });
+            } else if (type === 'reflection') {
+                const axis = document.getElementById('refAxis').value;
+                const hVal = parseFloat(document.getElementById('refValH')?.value) || 0;
+
+                transformedPoints = userPoints.map(p => {
+                    let nx = p.x, ny = p.y;
+                    if (axis === 'xaxis') ny = -p.y;
+                    else if (axis === 'yaxis') nx = -p.x;
+                    else if (axis === 'origin') { nx = -p.x; ny = -p.y; }
+                    else if (axis === 'yx') { let t = p.x; nx = p.y; ny = t; }
+                    else if (axis === 'yminusx') { let t = p.x; nx = -p.y; ny = -t; }
+                    else if (axis === 'lineh') nx = 2 * hVal - p.x;
+                    else if (axis === 'linek') ny = 2 * hVal - p.y;
+                    return { x: nx, y: ny };
+                });
+
+                logHtml += `<p class="font-bold text-sky-300">Refleksi (${axis})</p>`;
+                userPoints.forEach((p, i) => {
+                    const tp = transformedPoints[i];
+                    logHtml += `<p>A${i+1}(${p.x}, ${p.y}) → A'${i+1}(${tp.x}, ${tp.y})</p>`;
+                });
+            } else if (type === 'rotation') {
+                const angle = parseInt(document.getElementById('rotAngle').value);
+                const centerType = document.getElementById('rotCenter').value;
+                let cx = 0, cy = 0;
+                if (centerType === 'custom') {
+                    cx = parseFloat(document.getElementById('rotCenterX').value) || 0;
+                    cy = parseFloat(document.getElementById('rotCenterY').value) || 0;
+                }
+
+                const rad = (angle * Math.PI) / 180;
+                const cos = Math.cos(rad);
+                const sin = Math.sin(rad);
+
+                transformedPoints = userPoints.map(p => {
+                    // Translate to origin relative to center
+                    const xRel = p.x - cx;
+                    const yRel = p.y - cy;
+                    // Rotate
+                    const xRot = xRel * cos - yRel * sin;
+                    const yRot = xRel * sin + yRel * cos;
+                    // Translate back
+                    return {
+                        x: Math.round((xRot + cx) * 100) / 100,
+                        y: Math.round((yRot + cy) * 100) / 100
+                    };
+                });
+
+                logHtml += `<p class="font-bold text-amber-300">Rotasi ${angle}° [Pusat (${cx},${cy})]</p>`;
+                userPoints.forEach((p, i) => {
+                    const tp = transformedPoints[i];
+                    logHtml += `<p>A${i+1}(${p.x}, ${p.y}) → A'${i+1}(${tp.x}, ${tp.y})</p>`;
+                });
+            } else if (type === 'dilatation') {
+                const k = parseFloat(document.getElementById('dilScaleK').value) || 1;
+                const centerType = document.getElementById('dilCenter').value;
+                let cx = 0, cy = 0;
+                if (centerType === 'custom') {
+                    cx = parseFloat(document.getElementById('dilCenterX').value) || 0;
+                    cy = parseFloat(document.getElementById('dilCenterY').value) || 0;
+                }
+
+                transformedPoints = userPoints.map(p => ({
+                    x: cx + k * (p.x - cx),
+                    y: cy + k * (p.y - cy)
+                }));
+
+                logHtml += `<p class="font-bold text-emerald-300">Dilatasi [Skala k=${k}, Pusat (${cx},${cy})]</p>`;
+                userPoints.forEach((p, i) => {
+                    const tp = transformedPoints[i];
+                    logHtml += `<p>A${i+1}(${p.x}, ${p.y}) → A'${i+1}(${tp.x}, ${tp.y})</p>`;
+                });
+            }
+
+            document.getElementById('calculationLog').innerHTML = logHtml;
+
+            // Recalculate area for transformed polygon if applicable
+            if (transformedPoints.length >= 3 && currentTool === 'polygon') {
+                const origArea = calculatePolygonArea(userPoints);
+                const transArea = calculatePolygonArea(transformedPoints);
+                document.getElementById('calculatedArea').innerText = `Luas Bayangan: ${transArea} Satuan²`;
+            }
+
+            drawGridAndObjects();
+        }
+
+        function resetTransformation() {
+            transformedPoints = [];
+            document.getElementById('calculationLog').innerHTML = `<p class="text-slate-500 italic">Bayangan dihapus.</p>`;
+            if (userPoints.length >= 3 && currentTool === 'polygon') {
+                const area = calculatePolygonArea(userPoints);
+                document.getElementById('calculatedArea').innerText = `Luas: ${area} Satuan²`;
+            } else {
+                document.getElementById('calculatedArea').innerText = `Luas: 0 Satuan²`;
+            }
+            drawGridAndObjects();
+        }
+
+        // Shoelace formula for polygon area
+        function calculatePolygonArea(pts) {
+            let n = pts.length;
+            if (n < 3) return 0;
+            let area = 0;
+            for (let i = 0; i < n; i++) {
+                let j = (i + 1) % n;
+                area += pts[i].x * pts[j].y;
+                area -= pts[j].x * pts[i].y;
+            }
+            return Math.round(Math.abs(area) / 2 * 100) / 100;
+        }
+
+        // --- QUIZ MODULE ---
+        function renderQuiz() {
+            const q = quizQuestions[currentQuizIndex];
+            const container = document.getElementById('quizCard');
+            document.getElementById('currentScore').innerText = userScore;
+            document.getElementById('totalQuestions').innerText = quizQuestions.length;
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between text-xs text-indigo-400 font-semibold uppercase tracking-wider">
+                        <span>Soal ${currentQuizIndex + 1} dari ${quizQuestions.length}</span>
+                    </div>
+                    <h3 class="text-base font-semibold text-white leading-snug">${q.question}</h3>
+                    <div class="space-y-2 pt-2">
+            `;
+
+            q.options.forEach((opt, idx) => {
+                let btnClass = "w-full text-left px-4 py-3 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-700 text-sm text-slate-200 transition flex items-center space-x-3";
+                if (selectedQuizOption !== null) {
+                    if (idx === q.correct) {
+                        btnClass = "w-full text-left px-4 py-3 rounded-xl border border-emerald-500 bg-emerald-500/20 text-sm text-emerald-200 font-medium flex items-center space-x-3";
+                    } else if (idx === selectedQuizOption && idx !== q.correct) {
+                        btnClass = "w-full text-left px-4 py-3 rounded-xl border border-rose-500 bg-rose-500/20 text-sm text-rose-200 font-medium flex items-center space-x-3";
+                    }
+                }
+
+                html += `
+                    <button onclick="selectQuizAnswer(${idx})" ${selectedQuizOption !== null ? 'disabled' : ''} class="${btnClass}">
+                        <span class="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs text-slate-300 font-bold shrink-0">${String.fromCharCode(65 + idx)}</span>
+                        <span>${opt}</span>
+                    </button>
+                `;
+            });
+
+            html += `</div>`;
+
+            if (selectedQuizOption !== null) {
+                html += `
+                    <div class="bg-slate-900 border border-slate-700/80 p-4 rounded-xl space-y-2 mt-4 animate-fadeIn">
+                        <p class="text-xs font-bold ${selectedQuizOption === q.correct ? 'text-emerald-400' : 'text-rose-400'}">
+                            ${selectedQuizOption === q.correct ? '✅ Benar!' : '❌ Kurang Tepat.'}
+                        </p>
+                        <p class="text-xs text-slate-300 leading-relaxed">${q.explanation}</p>
+                        <button onclick="nextQuizQuestion()" class="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition">
+                            ${currentQuizIndex < quizQuestions.length - 1 ? 'Soal Berikutnya →' : 'Lihat Hasil Akhir'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function selectQuizAnswer(idx) {
+            selectedQuizOption = idx;
+            if (idx === quizQuestions[currentQuizIndex].correct) {
+                userScore++;
+            }
+            renderQuiz();
+        }
+
+        function nextQuizQuestion() {
+            currentQuizIndex++;
+            selectedQuizOption = null;
+            if (currentQuizIndex >= quizQuestions.length) {
+                showQuizResult();
+            } else {
+                renderQuiz();
+            }
+        }
+
+        function showQuizResult() {
+            const container = document.getElementById('quizCard');
+            container.innerHTML = `
+                <div class="text-center space-y-4 py-6">
+                    <div class="w-16 h-16 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto">
+                        <i data-lucide="award" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white">Kuis Selesai!</h3>
+                    <p class="text-slate-300 text-sm">Skor akhir kamu adalah <strong class="text-indigo-400 text-lg">${userScore}</strong> dari ${quizQuestions.length}</p>
+                    <button onclick="resetQuiz()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition">Ulangi Kuis</button>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function resetQuiz() {
+            currentQuizIndex = 0;
+            userScore = 0;
+            selectedQuizOption = null;
+            renderQuiz();
+        }
+    </script>
+</body>
+</html>
